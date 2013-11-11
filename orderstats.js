@@ -37,7 +37,7 @@ csv()
  		//console.log(sortthings(countthings(paidorders, 'buyer_country')))
  		//console.log(usorders)
  		//console.log(sortthings(countries))
- 		//console.log(counttessels(totalorders(paidorders)))
+ 		console.log(counttessels(totalorders(paidorders)))
  		console.log(sortthings(countqtys(usorders, 'buyer_state')));
  	});
 
