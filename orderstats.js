@@ -23,8 +23,8 @@ csv()
 	.to.array( function(data){
 		var orders = clean(data);
 		var paidorders = selectorders(orders, 'order_status', 'paid_balance');
-		//check to make sure this really works
 		var usorders = selectorders(orders, 'buyer_country', 'United States')
+		var dragonorders = selectorders(orders, 'order_platform', 'Dragon');
  		var countries = {};
  		for ( i = 1; i < orders.length; i++) {
  			var country = orders[i][3];
@@ -37,8 +37,9 @@ csv()
  		//console.log(sortthings(countthings(paidorders, 'buyer_country')))
  		//console.log(usorders)
  		//console.log(sortthings(countries))
- 		console.log(counttessels(totalorders(paidorders)))
- 		console.log(sortthings(countqtys(usorders, 'buyer_state')));
+ 		//console.log(counttessels(totalorders(paidorders)))
+ 		//console.log(sortthings(countqtys(usorders, 'buyer_state')));
+ 		console.log(countsku(countqtys(dragonorders, 'product')));
  	});
 
 function selectorders (orders, param, val) {
@@ -83,7 +84,7 @@ function sortthings (things) {
 }
 
 function countqtys (orders, param) {
-	//takes FIX THIS UP OR SOMETHING
+	//takes FIX THIS UP
 	var types = {};
 	headers = orders[0];
 	param = headers.indexOf(param);
@@ -95,13 +96,16 @@ function countqtys (orders, param) {
  		} else {
  			types[type] = qty;
  		}
+ 		if (types[type] == NaN) {
+ 			console.log(types)
+ 		}
  	}
  	return types
 }
 
 function counttessels (products) {
 //takes an object 'products' whose keys are product names, values qty ordered
-//e.g. {'The Master Pack': 274} ...
+//e.g. {'The Master Pack': 274} ..., output of countqtys(paidorders, 'product')
 //probably best to pass a an object that has cancelled orders removed first
 //returns the number of Tessels ordered
 	var tesselcount = 0;
@@ -117,6 +121,25 @@ function counttessels (products) {
 		}
 	}
 	return tesselcount;
+}
+
+function countsku (products) {
+//takes an object 'products' whose keys are product names, values qty ordered
+//e.g. {'The Master Pack': 274} ... output of countqtys(paidorders, 'product')
+//returns the number of total items ordered
+	var skucount = 0;
+	for (var product in products) {
+		if (product.indexOf('Master') > -1) {
+			skucount += 11 * products[product]; //10 modules, 1 tessel
+		} else if (product.indexOf('+') > -1) {
+			skucount += 2 * products[product]; //1 module, 1 tessel
+		} else if (product.indexOf('Module') > -1) {
+			skucount += products[product]; //1 module
+		} else if (product.indexOf('Everything') > -1) {
+			skucount += 14 * products[product]; //13 modules, 1 tessel
+		}
+	}
+	return skucount;
 }
 
 function clean (data) {
