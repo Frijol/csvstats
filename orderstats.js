@@ -39,7 +39,8 @@ csv()
  		//console.log(sortthings(countries))
  		//console.log(counttessels(totalorders(paidorders)))
  		//console.log(sortthings(countqtys(usorders, 'buyer_state')));
- 		console.log(countsku(countqtys(dragonorders, 'product')));
+ 		//console.log(countsku(countqtys(paidorders, 'product')));
+ 		console.log(sortthings(countqtys(paidorders, 'product')))
  	});
 
 function selectorders (orders, param, val) {
@@ -84,7 +85,9 @@ function sortthings (things) {
 }
 
 function countqtys (orders, param) {
-	//takes FIX THIS UP
+	//takes an array of orders and a column head (param)
+	//returns an object with the total quantity of each unique type in param
+	//BROKEN? RETURNS NAN
 	var types = {};
 	headers = orders[0];
 	param = headers.indexOf(param);
