@@ -26,7 +26,7 @@ csv()
 		var usorders = selectorders(orders, 'buyer_country', 'United States')
 		var dragonorders = selectorders(orders, 'order_platform', 'Dragon');
  		var countries = {};
- 		for ( i = 1; i < orders.length; i++) {
+ 		for ( var i = 1; i < orders.length; i++) {
  			var country = orders[i][3];
  			if (country in countries) {
  				countries[country] += 1;
@@ -37,10 +37,17 @@ csv()
  		//console.log(sortthings(countthings(paidorders, 'buyer_country')))
  		//console.log(usorders)
  		//console.log(sortthings(countries))
- 		//console.log(counttessels(totalorders(paidorders)))
+ 		//console.log(counttessels(countqtys(paidorders)))
  		//console.log(sortthings(countqtys(usorders, 'buyer_state')));
- 		//console.log(countsku(countqtys(paidorders, 'product')));
- 		console.log(sortthings(countqtys(paidorders, 'product')))
+ 		//console.log(countitems(countqtys(paidorders, 'product')));
+ 		//console.log(sortthings(countqtys(paidorders, 'product')));
+
+ 		//make a function out of this
+ 		ea = countmodules(countqtys(dragonorders, 'product'));
+		for (var j = 3; j < ea.length; j++) {
+			console.log(ea[j]/dragonorders.length)
+		}
+		console.log(dragonorders.length)
  	});
 
 function selectorders (orders, param, val) {
@@ -109,7 +116,6 @@ function countqtys (orders, param) {
 function counttessels (products) {
 //takes an object 'products' whose keys are product names, values qty ordered
 //e.g. {'The Master Pack': 274} ..., output of countqtys(paidorders, 'product')
-//probably best to pass a an object that has cancelled orders removed first
 //returns the number of Tessels ordered
 	var tesselcount = 0;
 	for (var product in products) {
@@ -126,23 +132,81 @@ function counttessels (products) {
 	return tesselcount;
 }
 
-function countsku (products) {
+function countitems (products) {
 //takes an object 'products' whose keys are product names, values qty ordered
 //e.g. {'The Master Pack': 274} ... output of countqtys(paidorders, 'product')
 //returns the number of total items ordered
-	var skucount = 0;
+	var itemcount = 0;
 	for (var product in products) {
 		if (product.indexOf('Master') > -1) {
-			skucount += 11 * products[product]; //10 modules, 1 tessel
+			itemcount += 11 * products[product]; //10 modules, 1 tessel
 		} else if (product.indexOf('+') > -1) {
-			skucount += 2 * products[product]; //1 module, 1 tessel
+			itemcount += 2 * products[product]; //1 module, 1 tessel
 		} else if (product.indexOf('Module') > -1) {
-			skucount += products[product]; //1 module
+			itemcount += products[product]; //1 module
 		} else if (product.indexOf('Everything') > -1) {
-			skucount += 14 * products[product]; //13 modules, 1 tessel
+			itemcount += 14 * products[product]; //13 modules, 1 tessel
 		}
 	}
 	return skucount;
+}
+
+function countmodules (products) {
+//takes an object 'products' whose keys are product names, values qty ordered
+//e.g. {'The Master Pack': 274} ... output of countqtys(paidorders, 'product')
+//returns the number of total classes of modules ordered
+	var tessel = 0;
+	var classA = 0; var classB = 0;
+	var climate = 0; var relay = 0; var ambient = 0;
+	var microsd = 0; var servo = 0; var accel = 0;
+	var nrf = 0; var gprs = 0; var gps = 0; var ble = 0;
+	var rfid = 0; var camera = 0; var audio = 0;
+	for (var product in products) {
+		var qty = products[product];
+		if ((product.indexOf('Master') > -1)
+		|| (product.indexOf('Everything') > -1)
+		|| (product.indexOf('Beta') > -1)) { //not really accurate on master pack & beta, but w/e
+			if (product.indexOf('Beta') > -1) {
+				tessel += 3 * qty;
+			} else {
+				tessel += qty;
+			}
+			climate += qty; relay += qty; ambient += qty;
+			microsd += qty; servo += qty; accel += qty;
+			nrf += qty; gprs += qty; gps += qty; ble +=qty;
+			rfid += qty; camera += qty; audio += qty;
+
+		} else if (product.indexOf('Climate') > -1) {
+			climate += qty;
+		} else if (product.indexOf('Relay') > -1) {
+			relay += qty;
+		} else if (product.indexOf('Ambient') > -1) {
+			ambient += qty;
+		} else if (product.indexOf('MicroSD') > -1) {
+			microsd += qty;
+		} else if (product.indexOf('Servo') > -1) {
+			servo += qty;
+		} else if (product.indexOf('Accelerometer') > -1) {
+			accel += qty;
+		} else if (product.indexOf('nRF24') > -1) {
+			nrf += qty;
+		} else if (product.indexOf('GPRS') > -1) {
+			gprs += qty;
+		} else if (product.indexOf('GPS') > -1) {
+			gps += qty;
+		} else if (product.indexOf('RFID') > -1) {
+			rfid += qty;
+		} else if (product.indexOf('Camera') > -1) {
+			camera += qty;
+		} else if (product.indexOf('Audio') > -1) {
+			audio += qty;
+		} else if (product.indexOf('Bluetooth') > -1) {
+			ble += qty;
+		}
+	}
+	classA = climate + relay + ambient + microsd + servo + accel + nrf;
+	classB = gprs + gps + rfid + camera + ble + audio;
+	return [tessel, classA, classB, climate, relay, ambient, microsd, servo, accel, nrf, gprs, gps, rfid, camera, ble, audio];
 }
 
 function clean (data) {
