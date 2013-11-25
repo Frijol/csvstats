@@ -15,15 +15,22 @@
 //map countries, cities as dots
 //mapping over time (gradient?) or even just Dragon v. Celery
 
+//Objective:
+//Integrate Celery orders into appropriate Dragon orders
+//Find the number of total shipments
+//Estimate the total quantity of skus per each order (pick & pack)
+//Estimate weight of each order (shipping)
+//Find geographic distribution (shipping)
+
 
 //most important: refactor to match the same person up w self, deal w many modules/line
 
-var file = './ordertracking.csv';
+var file = '../tesselcampaign_orders.csv'////'./ordertracking.csv';
 var csv = require('csv');
 
 csv()
 	.from.path(file, { delimiter: ',', escape: '"' })
-	.to.array( function(data){
+	.to.array( function(data) {
 		var orders = clean(data);
 		var paidorders = selectorders(orders, 'order_status', 'paid_balance');
 		var usorders = selectorders(orders, 'buyer_country', 'United States')
@@ -45,13 +52,9 @@ csv()
  		//console.log(sortthings(countqtys(usorders, 'buyer_state')));
  		//console.log(countitems(countqtys(paidorders, 'product')));
  		//console.log(sortthings(countqtys(paidorders, 'product')));
+ 		//console.log(moduledistribution(dragonorders))
+ 		console.log(eval(orders.))
 
- 		//make a function out of this
- 		ea = countmodules(countqtys(dragonorders, 'product'));
-		for (var j = 3; j < ea.length; j++) {
-			console.log(ea[j]/dragonorders.length)
-		}
-		console.log(dragonorders.length)
  	});
 
 function selectorders (orders, param, val) {
@@ -211,6 +214,17 @@ function countmodules (products) {
 	classA = climate + relay + ambient + microsd + servo + accel + nrf;
 	classB = gprs + gps + rfid + camera + ble + audio;
 	return [tessel, classA, classB, climate, relay, ambient, microsd, servo, accel, nrf, gprs, gps, rfid, camera, ble, audio];
+}
+
+function moduledistribution (orders) {
+	//supposed to give distribution of modules ordered
+	//probably buggy as hell
+	ea = countmodules(countqtys(orders, 'product'));
+	collector = [];
+	for (var j = 3; j < ea.length; j++) {
+		collector.push(ea[j]/orders.length);
+	}
+	return collector;
 }
 
 function clean (data) {

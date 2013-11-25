@@ -1,22 +1,9 @@
-//read file
-//cleanup function: standardize time & date, states, capitalization, phone nums?, putting together people w multiple orders
-//make everything objects with properties: arrays for platform, product
-//make a function to search for a given property
-//make a function to remove things with specific properties from object sets
-//make a function to search for associative pairs of properties
-//find total $ so far
-//find $/day
-//find avg amt spent/person, domestic/intl
-//find a good graphing utility and automatically graph everything
-//bar graph of countries
-//bar graph of u.s. states
-//bar graph module popularity
-//most popular orders
-//map countries, cities as dots
-//mapping over time (gradient?) or even just Dragon v. Celery
-
-
-//most important: refactor to match the same person up w self, deal w many modules/line
+//Objective:
+//Integrate Celery orders into appropriate Dragon orders
+//Find the number of total shipments
+//Estimate the total quantity of skus per each order (pick & pack)
+//Estimate weight of each order (shipping)
+//Find geographic distribution (shipping)
 
 var file = '../tesselcampaign_orders.csv';
 var csv = require('csv');
