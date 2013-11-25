@@ -53,9 +53,21 @@ csv()
  		//console.log(countitems(countqtys(paidorders, 'product')));
  		//console.log(sortthings(countqtys(paidorders, 'product')));
  		//console.log(moduledistribution(dragonorders))
- 		console.log(eval(orders.))
+ 		console.log(arrayselected(orders))
 
  	});
+
+ function arrayselected (orders) {
+	//takes in orders (only from the Dragon file)
+	//returns array of arrays of modules ordered, each order
+	headers = orders[0];
+	param = headers.indexOf('selected');
+	var res = []
+ 	for ( i = 1; i < orders.length; i++) {
+ 		res.push(eval(orders[i][param]));
+ 	}
+ 	return res;
+ }
 
 function selectorders (orders, param, val) {
 	//returns from a list of orders only those matching param/val
