@@ -15,6 +15,9 @@
 //map countries, cities as dots
 //mapping over time (gradient?) or even just Dragon v. Celery
 
+
+//most important: refactor to match the same person up w self, deal w many modules/line
+
 var file = './ordertracking.csv';
 var csv = require('csv');
 
@@ -34,6 +37,8 @@ csv()
  				countries[country] = 1;
  			}
  		}
+//mongoexport -h ds035498.mongolab.com:35498 -d heroku_app16265721 -c tesselcampaign_orders -u heroku_app16265721 -p h5klqdk8ju3qfor1es9pso34t -o tesselcampaign_orders.csv --csv -f _id,base_pledge,city,country,created_at,email,incentive,incentive_name,order,postal_code,preference,quantity_purchased,region,selected,shipping_cost,street_address,street_address_2,total_pledged,user_name
+
  		//console.log(sortthings(countthings(paidorders, 'buyer_country')))
  		//console.log(usorders)
  		//console.log(sortthings(countries))
