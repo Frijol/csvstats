@@ -18,16 +18,16 @@
 
 //most important: refactor to match the same person up w self, deal w many modules/line
 
-var file = './ordertracking.csv';
+var file = '../tesselcampaign_orders.csv';
 var csv = require('csv');
 
 csv()
 	.from.path(file, { delimiter: ',', escape: '"' })
 	.to.array( function(data){
 		var orders = clean(data);
-		var paidorders = selectorders(orders, 'order_status', 'paid_balance');
-		var usorders = selectorders(orders, 'buyer_country', 'United States')
-		var dragonorders = selectorders(orders, 'order_platform', 'Dragon');
+		//var paidorders = selectorders(orders, 'order_status', 'paid_balance');
+		//var usorders = selectorders(orders, 'buyer_country', 'United States')
+		//var dragonorders = selectorders(orders, 'order_platform', 'Dragon');
  		var countries = {};
  		for ( var i = 1; i < orders.length; i++) {
  			var country = orders[i][3];
@@ -38,6 +38,9 @@ csv()
  			}
  		}
 
+ 		console.log(thisn(orders))
+
+
  		//console.log(sortthings(countthings(paidorders, 'buyer_country')))
  		//console.log(usorders)
  		//console.log(sortthings(countries))
@@ -47,11 +50,11 @@ csv()
  		//console.log(sortthings(countqtys(paidorders, 'product')));
 
  		//make a function out of this
- 		ea = countmodules(countqtys(dragonorders, 'product'));
-		for (var j = 3; j < ea.length; j++) {
-			console.log(ea[j]/dragonorders.length)
-		}
-		console.log(dragonorders.length)
+ 	// 	ea = countmodules(countqtys(dragonorders, 'product'));
+		// for (var j = 3; j < ea.length; j++) {
+		// 	console.log(ea[j]/dragonorders.length)
+		// }
+		// console.log(dragonorders.length)
  	});
 
 function selectorders (orders, param, val) {
@@ -81,6 +84,19 @@ function countthings (orders, param) {
  		} else {
  			types[type] = 1;
  		}
+ 	}
+ 	return types
+}
+
+function thisn (orders) {
+	//takes array of orders and a param (categ.)
+	//returns an object with numerical values e.g. {'type': 2}
+	var types = {};
+	headers = orders[0];
+	param = headers.indexOf('selected');
+ 	for ( i = 1; i < orders.length; i++) {
+ 		var all = eval(orders[i][param]);
+ 		console.log(all)
  	}
  	return types
 }
