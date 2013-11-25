@@ -25,6 +25,7 @@
 
 //most important: refactor to match the same person up w self, deal w many modules/line
 
+//need to find a way to read both csvs..
 var file = '../tesselcampaign_orders.csv'////'./ordertracking.csv';
 var csv = require('csv');
 
