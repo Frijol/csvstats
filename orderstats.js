@@ -26,11 +26,12 @@
 //most important: refactor to match the same person up w self, deal w many modules/line
 
 //need to find a way to read both csvs..
-var file = '../tesselcampaign_orders.csv'////'./ordertracking.csv';
+var dragonfile = '../tesselcampaign_orders.csv'
+var celeryfile = '../celeryorders.csv'////'./ordertracking.csv';
 var csv = require('csv');
 
 csv()
-	.from.path(file, { delimiter: ',', escape: '"' })
+	.from.path(dragonfile, { delimiter: ',', escape: '"' })
 	.to.array( function(data) {
 		var orders = clean(data);
 		var paidorders = selectorders(orders, 'order_status', 'paid_balance');
