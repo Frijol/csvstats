@@ -22,33 +22,68 @@ function integrate (dragondata, celerydata) {
 	var orders = []
 	//objectify Celery orders
 	for (i = 1; i < celerydata.length; i++) {
+		row = celerydata[i];
 		orders[i-1] = {
-			order_id: celerydata[i][0], 
-			date: celerydata[i][1],
-			order_status: celerydata[i][2],
-			shipped_status: celerydata[i][3],
-			buyer_email: celerydata[i][4],
-			buyer_name: celerydata[i][5],
-			buyer_company: celerydata[i][6],
-			buyer_street: celerydata[i][7],
-			buyer_street2: celerydata[i][8],
-			buyer_city: celerydata[i][9],
-			buyer_state: celerydata[i][10],
-			buyer_zip: celerydata[i][11],
-			buyer_country: celerydata[i][12],
-			buyer_phone: celerydata[i][13],
-			payment_method: celerydata[i][14],
-			order_total: celerydata[i][15],
-			order_taxes: celerydata[i][16],
-			order_notes: celerydata[i][17],
-			coupon_code: celerydata[i][18],
-			product: celerydata[i][19],
-			quantity: celerydata[i][20],
-			unit_price: celerydata[i][21],
-			line_total: celerydata[i][22],
-			options_name_1: celerydata[i][23],
-			options_value_1: celerydata[i][24],
-			options_price_1: celerydata[i][25]
+			order_id: row[0], 
+			date: row[1],
+			order_status: row[2],
+			shipped_status: row[3],
+			buyer_email: row[4],
+			buyer_name: [5],
+			buyer_company: row[6],
+			buyer_street: row[7],
+			buyer_street2: row[8],
+			buyer_city: row[9],
+			buyer_state: row[10],
+			buyer_zip: row[11],
+			buyer_country: row[12],
+			buyer_phone: row[13],
+			payment_method: row[14],
+			order_total: row[15],
+			order_taxes: row[16],
+			order_notes: row[17],
+			coupon_code: row[18],
+			product: row[19],
+			quantity: row[20],
+			unit_price: row[21],
+			line_total: row[22],
+			options_name_1: row[23],
+			options_value_1: row[24],
+			options_price_1: row[25],
+			platform: 'Celery'
+		}
+	}
+	//map & objectify Dragon orders
+	for (i = 1; i < dragondata.length; i++) {
+		row = dragondata[i];
+		orders[i-1] = {
+			order_id: row[0], //
+			date: row[4], //
+			order_status: 'paid_balance',
+			shipped_status: '',
+			buyer_email: row[5], //
+			buyer_name: [18], //
+			buyer_company: '',
+			buyer_street: row[15], //
+			buyer_street2: row[16], //
+			buyer_city: row[2], //
+			buyer_state: row[12], //
+			buyer_zip: row[9], //
+			buyer_country: row[3],//
+			buyer_phone: '',
+			payment_method: row[10], //'preference'
+			order_total: row[17], //
+			order_taxes: row[14], //'shipping_cost'
+			order_notes: '',
+			coupon_code: '',
+			product: row[6], //?'incentive'
+			quantity: row[11], //
+			unit_price: row[1], //
+			line_total: row[17], //
+			options_name_1: row[7], //?'incentive_name'
+			options_value_1: eval(row[13]), //
+			options_price_1: row[8], //?'order'
+			platform: 'Dragon'
 		}
 	}
 	console.log(orders)
