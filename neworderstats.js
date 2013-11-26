@@ -14,22 +14,27 @@ var celeryfile = '../celeryorders.csv'////'./ordertracking.csv';
 //Read both order files
 csv().from.path(dragonfile, {delimiter: ',', escape: '"'}).to.array(function(dragondata) {
 	csv().from.path(celeryfile, {delimiter: ',', escape: '"'}).to.array(function(celerydata) {
-		integrate(dragondata, celerydata);
+		orders = integrate(dragondata, celerydata);
+		matchnames(orders);
 	})
 })
 
 function integrate (dragondata, celerydata) {
+	//takes input as shown MUST BE IN ORDER
+	//returns orders as an array of objects
 	var orders = []
+	celerydata.shift()
+	dragondata.shift()
 	//objectify Celery orders
-	for (i = 1; i < celerydata.length; i++) {
+	for (var i in celerydata) {
 		row = celerydata[i];
-		orders[i-1] = {
+		orders[i] = {
 			order_id: row[0], 
 			date: row[1],
 			order_status: row[2],
 			shipped_status: row[3],
 			buyer_email: row[4],
-			buyer_name: [5],
+			buyer_name: row[5],
 			buyer_company: row[6],
 			buyer_street: row[7],
 			buyer_street2: row[8],
@@ -54,39 +59,41 @@ function integrate (dragondata, celerydata) {
 		}
 	}
 	//map & objectify Dragon orders
-	for (i = 1; i < dragondata.length; i++) {
-		row = dragondata[i];
-		orders[i-1] = {
-			order_id: row[0], //
-			date: row[4], //
+	for (var j in dragondata) {
+		row = dragondata[j];
+		orders[i + j] = {
+			order_id: row[8], //row[0].split('(')[1].split(')')[0],
+			date: row[4], //TODO: CONVERT TO CELERY TIME
 			order_status: 'paid_balance',
 			shipped_status: '',
 			buyer_email: row[5], //
-			buyer_name: [18], //
+			buyer_name: row[18], //
 			buyer_company: '',
 			buyer_street: row[15], //
 			buyer_street2: row[16], //
 			buyer_city: row[2], //
-			buyer_state: row[12], //
+			buyer_state: row[12], //TODO: MAKE UNIFORM
 			buyer_zip: row[9], //
-			buyer_country: row[3],//
+			buyer_country: row[3],//TODO: MAKE UNIFORM
 			buyer_phone: '',
 			payment_method: row[10], //'preference'
 			order_total: row[17], //
 			order_taxes: row[14], //'shipping_cost'
 			order_notes: '',
 			coupon_code: '',
-			product: row[6], //?'incentive'
+			product: row[6], //
 			quantity: row[11], //
 			unit_price: row[1], //
 			line_total: row[17], //
-			options_name_1: row[7], //?'incentive_name'
+			options_name_1: row[7], //'incentive_name'
 			options_value_1: eval(row[13]), //
-			options_price_1: row[8], //?'order'
+			options_price_1: '',
 			platform: 'Dragon'
 		}
 	}
-	console.log(orders)
-	console.log(dragondata[0])
-	console.log(celerydata[0])
+	return orders
+}
+
+function matchnames (orders) {
+	for (var i in orders){}
 }
