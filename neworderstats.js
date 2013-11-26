@@ -95,5 +95,7 @@ function integrate (dragondata, celerydata) {
 }
 
 function matchnames (orders) {
-	for (var i in orders){}
+	for (var i in orders){
+		console.log(orders[i].buyer_name)
+	}
 }
