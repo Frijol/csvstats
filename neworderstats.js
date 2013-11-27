@@ -16,23 +16,61 @@ var celeryfile = '../celeryorders.csv'////'./ordertracking.csv';
 csv().from.path(dragonfile, {delimiter: ',', escape: '"'}).to.array(function(dragondata) {
 	csv().from.path(celeryfile, {delimiter: ',', escape: '"'}).to.array(function(celerydata) {
 		orders = integrate(dragondata, celerydata);
-		splitrows(orders);
+		lines = splitrows(orders);
 		//matchnames(orders);
 	})
 })
 
 function splitrows (orders) {
-	//takes in orders, creates a new line for each sku in the order
+	//takes in orders, creates a new line for each item in the order
 	//returns 'lines', each of which has one item
 	var lines = [];
+	index = 0; //for indexing lines
 	for (var order in orders) {
-		index = 0; //for indexing lines
-		console.log(orders[order])
-		//determine how many items are in each order
-		//iterate through items contained within each order
-		//index each item with a new line ('tessel', 'relay'...)
-		///as a new property of the otherwise copied order object
+		//add array of modules to 'one of everything' option
+		if (orders[order].product.indexOf('Everything') > -1) {
+			orders[order].options_value_1 = ['accelerometer', 'ble', 'gps', '2g', 'nrf', 'servo', 'ambient', 'camera', 'relay', 'audio', 'climate', 'microsd', 'rfid']
+		}
+		//iterate for 'quantity' value
+		for (var num = 0; num < parseInt(orders[order].quantity); num ++) {
+			lines[index] = orders[order];
+			lines[index].quantity = 1;
+			index ++
+			//UNCHECKED: how are e.g. multiple master pack orders handled?
+		}
+		//make array for 'one of everything' orders
 	}
+	var currentlength = index;
+	for (var line = 0; line < currentlength; line ++) {
+		//make line for each tessel IGNORING BETAS, THANKS, TEES
+		if ((lines[line].product.indexOf('Master') > -1)
+		|| (lines[line].product.indexOf('Everything') > -1)
+		|| (lines[line].product.indexOf('One') > -1)
+		|| (lines[line].product.indexOf('free') > -1)) {
+			lines[index] = orders[order];
+			lines[index].item = 'tessel'; //setting new property 'item'
+			index ++;
+			//make a new line for each item in Dragon's 'selected' and for 'everything's
+			if (typeof lines[line].options_value_1 == 'object') {
+				for (x in lines[line].options_value_1) {
+					lines[index] = lines[line];
+					lines[index].item = lines[line].options_value_1[x];
+					index ++;
+				}
+			//make a new line for each item in Celery's options
+			} else if (lines[line].options_value_1 == 'string') {
+				lines[index] = lines[line];
+				lines[index].item = lines[line].options_value_1.toLowerCase();
+				index ++;
+			}
+		} else if ((lines[line].product.indexOf('est') + lines[line].product.indexOf('hank') + lines[line].product.indexOf('hirt')) < 0) {
+			console.log(lines[line])
+		}
+		//make a new line for each module
+		//fuck I got distracted but I need to do something like take the ifs out of the bigger if
+	}
+	//console.log(lines)
+	return lines
 }
 
 function integrate (dragondata, celerydata) {
@@ -97,11 +135,11 @@ function integrate (dragondata, celerydata) {
 			order_taxes: row[14], //'shipping_cost'
 			order_notes: '',
 			coupon_code: '',
-			product: row[6], //
+			product: row[7], //
 			quantity: row[11], //
 			unit_price: row[1], //
 			line_total: row[17], //
-			options_name_1: row[7], //'incentive_name'
+			options_name_1: row[6], //
 			options_value_1: eval(row[13]), //
 			options_price_1: '',
 			platform: 'Dragon'
