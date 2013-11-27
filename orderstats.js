@@ -52,10 +52,10 @@ csv()
  		//console.log(sortthings(countries))
  		//console.log(counttessels(countqtys(paidorders)))
  		//console.log(sortthings(countqtys(usorders, 'buyer_state')));
- 		//console.log(countitems(countqtys(paidorders, 'product')));
+ 		console.log(sortthings(countqtys(paidorders, 'product')));
  		//console.log(sortthings(countqtys(paidorders, 'product')));
  		//console.log(moduledistribution(dragonorders))
- 		console.log(arrayselected(orders))
+ 		//console.log(arrayselected(orders))
 
  	});
 
@@ -169,7 +169,7 @@ function countitems (products) {
 			itemcount += 14 * products[product]; //13 modules, 1 tessel
 		}
 	}
-	return skucount;
+	return itemcount;
 }
 
 function countmodules (products) {
