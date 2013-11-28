@@ -26,9 +26,18 @@ function pack (lines) {
 	//takes lines, 1 item/line; for each address creates a 'package' of all items to send there
 	//returns 'packages' array of 'package's array of 'line' objects
 	packages = []
+	addresses = []
 	lines.forEach(function (line) {
-		//console.log(line)
-	})
+		var address = line.buyer_country + ' ' + line.buyer_zip + ' ' + line.buyer_street + ' ' + line.buyer_street2 + ' ' + line.buyer_name
+		//this doesn't work yet
+		if (addresses.indexOf(address) > -1) {
+			console.log('not new')
+		} else {
+			console.log('new')
+			addresses.push(address)
+		}
+
+	});
 	return packages;
 }
 
