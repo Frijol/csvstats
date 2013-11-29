@@ -18,24 +18,25 @@ csv().from.path(dragonfile, {delimiter: ',', escape: '"'}).to.array(function(dra
 		orders = integrate(dragondata, celerydata);
 		lines = splitRows(orders);
 		packages = pack(lines)
+		console.log(packages)
 		//console.log(lines.sort(compare))
 	})
 })
 
 function pack (lines) {
 	//takes lines, 1 item/line; for each address creates a 'package' of all items to send there
-	//returns 'packages' array of 'package's array of 'line' objects
-	packages = []
-	addresses = []
+	//returns 'packages' object of 'package's array of 'line' objects
+	packages = {}
 	lines.forEach(function (line) {
-		var address = line.buyer_country + ' ' + line.buyer_zip + ' ' + line.buyer_street + ' ' + line.buyer_street2 + ' ' + line.buyer_name
-			if (addresses.indexOf(address) != -1) {
-				console.log('not new')
-			} else {
-				console.log('new')
-				addresses.push(address)
-			}
-
+		var address = line.buyer_country + ' ' + line.buyer_zip + ' ' + line.buyer_street + ' ' + line.buyer_street2 + ' ' + line.buyer_name;
+		if (address in packages) {
+			//if the address is already in addresses, add this line to its array of lines
+			packages[address].push(line);
+		} else {
+			//otherwise, make this address a new key and put the first line in the array
+			packages[address] = [];
+			packages[address].push(line);
+		}
 	});
 	return packages;
 }
