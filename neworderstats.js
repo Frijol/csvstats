@@ -17,17 +17,41 @@ csv().from.path(dragonfile, {delimiter: ',', escape: '"'}).to.array(function(dra
 	csv().from.path(celeryfile, {delimiter: ',', escape: '"'}).to.array(function(celerydata) {
 		orders = integrate(dragondata, celerydata);
 		lines = splitRows(orders);
-		packages = pack(lines)
-		console.log(packages)
-		//console.log(lines.sort(compare))
+		items = getRidOfStuff(lines); //removes betas, tees, thanks, tests
+		packages = pack(items); //need to build in more wiggle room here; clean up countries etc
+		selection = requireDragon(packages);
 	})
 })
 
-function pack (lines) {
+function printStats (selection) {
+	console.log('Total number of shipments: ' + selection.length);
+	console.log('Distribution of items per shipment: '); //sorted array [#items: #shipments]
+	console.log('Weight distribution of shipments: '); //sorted array [weight: #shipments]
+	console.log('Geographic distribution of shipments: '); //sorted array [country: #shipments]
+}
+
+function requireDragon (packages) {
+	//returns only those packages which include at least one Dragon order
+	selection = []; //BETTER IF THIS WERE AN OBJECT
+	for (i in packages) {
+		dragonCount = 0;
+		packages[i].forEach(function (line) {
+			if (line.orderPlatform == 'Dragon') {
+				dragonCount += 1;
+			}
+		});
+		if (dragonCount > 0) {
+			selection.push(packages[i]);
+		}
+	}
+	return selection;
+}
+
+function pack (items) {
 	//takes lines, 1 item/line; for each address creates a 'package' of all items to send there
 	//returns 'packages' object of 'package's array of 'line' objects
 	packages = {}
-	lines.forEach(function (line) {
+	items.forEach(function (line) {
 		var address = line.buyer_country + ' ' + line.buyer_zip + ' ' + line.buyer_street + ' ' + line.buyer_street2 + ' ' + line.buyer_name;
 		if (address in packages) {
 			//if the address is already in addresses, add this line to its array of lines
@@ -41,12 +65,16 @@ function pack (lines) {
 	return packages;
 }
 
-function compare (a, b) {
-  if (a.buyer_email < b.buyer_email)
-     return -1;
-  if (a.buyer_email > b.buyer_email)
-    return 1;
-  return 0;
+function getRidOfStuff (lines) {
+	//gets rid of lines for betas, tests, tees, thanks
+	var items = []
+	lines.forEach(function (line) {
+		var productName = line.product
+		if ((productName.indexOf('est') == -1) && (productName.indexOf('irt') == -1) && (productName.indexOf('hank') == -1)) {
+			items.push(line)
+		}
+	})
+	return items
 }
 
 function splitRows (orders) {
@@ -139,7 +167,7 @@ function integrate (dragondata, celerydata) {
 			options_name_1: row[23],
 			options_value_1: row[24],
 			options_price_1: row[25],
-			platform: 'Celery'
+			orderPlatform: 'Celery'
 		}
 	}
 	//map & objectify Dragon orders
@@ -172,7 +200,7 @@ function integrate (dragondata, celerydata) {
 			options_name_1: row[6], //
 			options_value_1: eval(row[13]), //
 			options_price_1: '',
-			platform: 'Dragon'
+			orderPlatform: 'Dragon'
 		}
 	}
 	return orders
