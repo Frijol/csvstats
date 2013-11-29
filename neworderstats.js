@@ -29,13 +29,12 @@ function pack (lines) {
 	addresses = []
 	lines.forEach(function (line) {
 		var address = line.buyer_country + ' ' + line.buyer_zip + ' ' + line.buyer_street + ' ' + line.buyer_street2 + ' ' + line.buyer_name
-		//this doesn't work yet
-		if (addresses.indexOf(address) > -1) {
-			console.log('not new')
-		} else {
-			console.log('new')
-			addresses.push(address)
-		}
+			if (addresses.indexOf(address) != -1) {
+				console.log('not new')
+			} else {
+				console.log('new')
+				addresses.push(address)
+			}
 
 	});
 	return packages;
