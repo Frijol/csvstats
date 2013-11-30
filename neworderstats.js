@@ -8,6 +8,13 @@
 //Estimate weight of each order (shipping)
 //Find geographic distribution (shipping)
 
+/*
+UNSOLVED MYSTERIES
+Why are there so many tessels?
+Why do Master Packs and Everythings repeat?
+Where do the 'undefined's come from?
+*/
+
 var csv = require('csv');
 var dragonfile = '../tesselcampaign_orders.csv'
 var celeryfile = '../celeryorders.csv'////'./ordertracking.csv';
@@ -33,10 +40,8 @@ function getDistr (selection, attr) {
 	selection.forEach(function (entry) {
 		var attribute = entry.item//MANUAL RIGHT NOW
 		if (attribute in attrs) {
-			//console.log ('not new')
 			attrs[attribute] ++;
 		} else {
-			//console.log(attribute)
 			attrs[attribute] = 1;
 		}
 	});
@@ -135,45 +140,25 @@ function splitRows (orders) {
 	//returns 'lines', each of which has one item
 	var lines = [];
 	index = 0; //for indexing lines
-	orders.forEach( function (order) {
+	for (var i in orders) {
 		//iterate for 'quantity' value
-		for (var num = 0; num < parseInt(order.quantity); num ++) {
-			lines[index] = order;
+		for (var num = 0; num < parseInt(orders[i].quantity); num ++) {
+			lines[index] = orders[i];
 			lines[index].quantity = 1;
 			index ++;
-			//UNCHECKED: how are e.g. multiple master pack orders handled?
 		}
-	});
+	} 
 	var currentLength = index;
 	for (var line = 0; line < currentLength; line ++) {
-		//make a line for each tessel
-		var productName = lines[line].product;
-		if ((productName.indexOf('Master') > -1)
-		|| (productName.indexOf('Everything') > -1)
-		|| (productName.indexOf('One') > -1)) {
-			lines[index] = lines[line];
-			lines[index].item = 'tessel'; //setting new property 'item'
-			index ++;
-		} else if ((productName.indexOf('Module') > -1) && (lines[line].options_name_1 == '')) {
-			//make a new line for each module
-			lines[index] = lines[line];
-			lines[index].item = productName.split(' ')[0].split('/')[0].toLowerCase();
-			index++;
-		}
 		//make a new line for each item in options
-		if (typeof lines[line].options_value_1 == 'object') {
-			for (var x in lines[line].options_value_1) {
-				lines[index] = lines[line];
-				lines[index].item = lines[line].options_value_1[x];
-					// if (lines[index].product.indexOf('verything') > -1) {
-					// 	console.log(lines[index].item)
-					// }
-				index ++;
-				//BUG: sometimes just repeats the last value in the array over and over
-			}
+		for (var myVar in lines[line].options_value_1) {
+			//console.log(lines[line].options_value_1)
+			lines[index] = lines[line];
+			lines[index].item = lines[line].options_value_1[myVar];
+			index ++;
 		} 
 	}
-	//console.log(lines);
+	console.log(lines)
 	return lines
 }
 
@@ -298,31 +283,56 @@ function clean (objects) {
 				entry.buyer_state = 'UT'
 			}
 		}
-		//make array for 'one of everything' orders
-		if (entry.product.indexOf('Everything') > -1) {
-			entry.options_value_1 = ['accelerometer', 'ble', 'gps', 'gprs', 'nrf', 'servo', 'ambient', 'camera', 'relay', 'audio', 'climate', 'microsd', 'rfid']
-		}
 		//make all option names arrays
 		if (typeof entry.options_value_1 == 'string') {
 			entry.options_value_1 = [entry.options_value_1.toLowerCase()]
+		} else if (Object.prototype.toString.call(entry.options_value_1) === '[object Array]') {
+			//may God preserve you just as you are, you beautiful bastard
+		} else {
+			entry.options_value_1 = []
+		}
+		//make array for 'one of everything' orders
+		if (entry.product.indexOf('Everything') > -1) {
+			entry.options_value_1.push('accelerometer', 'ble', 'gps', 'gprs', 'nrf', 'servo', 'ambient', 'camera', 'relay', 'audio', 'climate', 'microsd', 'rfid');
+		}
+		//make a line for each tessel
+		var productName = entry.product;
+		if ((productName.indexOf('Master') > -1)
+		|| (productName.indexOf('Everything') > -1)
+		|| (productName.indexOf('One') > -1)) {
+			entry.options_value_1.push('tessel');
+		} else if ((productName.indexOf('Module') > -1) && (productName.indexOf('Class') == -1)) {
+			entry.options_value_1.push(productName);
 		}
 		//standardize product names
-		if (typeof entry.options_value_1 != 'undefined') {
-			for (var now in entry.options_value_1) {
-				item = entry.options_value_1[now];
-				if (item == 'nrf24') {
-					entry.options_value_1[now] = 'nrf'
-				} else if (item == 'sdcard') {
-					entry.options_value_1[now] = 'microsd'
-				} else if (item == '2g') {
-					entry.options_value_1[now] = 'gprs'
-				} else if (item == 'bluetooth low energy') {
-					entry.options_value_1[now] = 'ble'
-				} else if (item == 'audio module') {
-					entry.options_value_1[now] = 'audio'
-				} else if (item == '') {
-					entry.options_value_1[now] = 'undefined'
-				}
+		for (var now in entry.options_value_1) {
+			thisName = entry.options_value_1[now];
+			if (thisName == 'nrf24' || thisName == 'nRF24 Module') {
+				entry.options_value_1[now] = 'nrf'
+			} else if (thisName == 'sdcard' || thisName == 'MicroSD Module') {
+				entry.options_value_1[now] = 'microsd'
+			} else if (thisName == '2g' || thisName == 'GPRS/SIM Module') {
+				entry.options_value_1[now] = 'gprs'
+			} else if (thisName == 'bluetooth low energy' || thisName == 'Bluetooth Low Energy Module') {
+				entry.options_value_1[now] = 'ble'
+			} else if (thisName == 'audio module' || thisName == 'Audio Module') {
+				entry.options_value_1[now] = 'audio'
+			} else if (thisName == 'GPS Module') {
+				entry.options_value_1[now] = 'gps'
+			} else if (thisName == 'Accelerometer Module') {
+				entry.options_value_1[now] = 'accelerometer'
+			} else if (thisName == 'RFID Module') {
+				entry.options_value_1[now] = 'rfid'
+			} else if (thisName == 'Camera Module') {
+				entry.options_value_1[now] = 'camera'
+			} else if (thisName == 'Servo Module') {
+				entry.options_value_1[now] = 'servo'
+			} else if (thisName == 'Climate Module') {
+				entry.options_value_1[now] = 'climate'
+			} else if (thisName == 'Ambient (Light and Sound) Module') {
+				entry.options_value_1[now] = 'ambient'
+			} else if (thisName == 'Relay Module') {
+				entry.options_value_1[now] = 'relay'
 			}
 		}
 	}
