@@ -19,9 +19,10 @@ csv().from.path(dragonfile, {delimiter: ',', escape: '"'}).to.array(function(dra
 		orders = clean(objects);
 		lines = splitRows(orders);
 		items = getRidOfStuff(lines); //removes betas, tees, thanks, tests
-		packages = pack(items); //need to build in more wiggle room here; clean up countries etc
+		packages = pack(items);
+		//console.log(Object.keys(packages))
 		selection = requireDragon(packages);
-		getDistr(orders, 'buyer_country')
+		//getDistr(objects, 'buyer_country')
 		//printStats(selection);
 	})
 })
@@ -30,7 +31,7 @@ function getDistr (selection, attr) {
 	//prints stats about elements of selection.attr NOT WORKING W ARG
 	var attrs = {}
 	selection.forEach(function (entry) {
-		var attribute = entry.buyer_country//MANUAL RIGHT NOW
+		var attribute = entry.buyer_state//MANUAL RIGHT NOW
 		if (attribute in attrs) {
 			//console.log ('not new')
 			attrs[attribute] ++;
@@ -39,12 +40,15 @@ function getDistr (selection, attr) {
 			attrs[attribute] = 1;
 		}
 	});
+	console.log(sortObjIntoArr(attrs))
+}
+
+function sortObjIntoArr (obj) {
 	var sortable = [];
-	for (var entry in attrs){
-		sortable.push([entry, attrs[entry]])
+	for (var entry in obj) {
+		sortable.push([entry, obj[entry]])
 	}
-	sortable.sort(function(a, b) {return b[1] - a[1]})
-	console.log(sortable)
+	return sortable.sort(function(a, b) {return b[1] - a[1]})
 }
 
 function printStats (selection) {
@@ -344,38 +348,38 @@ function integrate (dragondata, celerydata) {
 			options_price_1: row[25],
 			orderPlatform: 'Celery'
 		}
-		//map & objectify Dragon orders
-		dragondata.forEach(function (row) {
-			orders[i++] = {
-				order_id: row[8], //row[0].split('(')[1].split(')')[0],
-				date: row[4], //TODO: CONVERT TO CELERY TIME
-				order_status: 'paid_balance',
-				shipped_status: '',
-				buyer_email: row[5], //
-				buyer_name: row[18], //
-				buyer_company: '',
-				buyer_street: row[15], //
-				buyer_street2: row[16], //
-				buyer_city: row[2], //
-				buyer_state: row[12], //TODO: MAKE UNIFORM
-				buyer_zip: row[9], //
-				buyer_country: row[3],//TODO: MAKE UNIFORM
-				buyer_phone: '',
-				payment_method: row[10], //'preference'
-				order_total: row[17], //
-				order_taxes: row[14], //'shipping_cost'
-				order_notes: '',
-				coupon_code: '',
-				product: row[7], //
-				quantity: row[11], //
-				unit_price: row[1], //
-				line_total: row[17], //
-				options_name_1: row[6], //
-				options_value_1: eval(row[13]), //
-				options_price_1: '',
-				orderPlatform: 'Dragon'
-			}
-		});
+	});
+	//map & objectify Dragon orders
+	dragondata.forEach(function (row) {
+		orders[i++] = {
+		order_id: row[8], //row[0].split('(')[1].split(')')[0],
+			date: row[4], //TODO: CONVERT TO CELERY TIME
+			order_status: 'paid_balance',
+			shipped_status: '',
+			buyer_email: row[5], //
+			buyer_name: row[18], //
+			buyer_company: '',
+			buyer_street: row[15], //
+			buyer_street2: row[16], //
+			buyer_city: row[2], //
+			buyer_state: row[12], //TODO: MAKE UNIFORM
+			buyer_zip: row[9], //
+			buyer_country: row[3],//TODO: MAKE UNIFORM
+			buyer_phone: '',
+			payment_method: row[10], //'preference'
+			order_total: row[17], //
+			order_taxes: row[14], //'shipping_cost'
+			order_notes: '',
+			coupon_code: '',
+			product: row[7], //
+			quantity: row[11], //
+			unit_price: row[1], //
+			line_total: row[17], //
+			options_name_1: row[6], //
+			options_value_1: eval(row[13]), //
+			options_price_1: '',
+			orderPlatform: 'Dragon'
+		}
 	});
 	return orders;
 }
