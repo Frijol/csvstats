@@ -13,16 +13,16 @@ var dragonfile = '../tesselcampaign_orders.csv'
 var celeryfile = '../celeryorders.csv'////'./ordertracking.csv';
 
 //Read both order files
-csv().from.path(dragonfile, {delimiter: ',', escape: '"'}).to.array(function(dragondata) {
-	csv().from.path(celeryfile, {delimiter: ',', escape: '"'}).to.array(function(celerydata) {
-		objects = integrate(dragondata, celerydata);
+csv().from.path(dragonfile, {delimiter: ',', escape: '"'}).to.array(function(dragonData) {
+	csv().from.path(celeryfile, {delimiter: ',', escape: '"'}).to.array(function(celeryData) {
+		objects = objectify(dragonData, celeryData);
 		orders = clean(objects);
 		lines = splitRows(orders);
 		items = getRidOfStuff(lines); //removes betas, tees, thanks, tests
 		packages = pack(items);
 		//console.log(Object.keys(packages))
 		selection = requireDragon(packages);
-		//getDistr(objects, 'buyer_country')
+		getDistr(items, 'buyer_country')
 		//printStats(selection);
 	})
 })
@@ -31,7 +31,7 @@ function getDistr (selection, attr) {
 	//prints stats about elements of selection.attr NOT WORKING W ARG
 	var attrs = {}
 	selection.forEach(function (entry) {
-		var attribute = entry.buyer_state//MANUAL RIGHT NOW
+		var attribute = entry.item//MANUAL RIGHT NOW
 		if (attribute in attrs) {
 			//console.log ('not new')
 			attrs[attribute] ++;
@@ -160,21 +160,18 @@ function splitRows (orders) {
 			lines[index].item = productName.split(' ')[0].split('/')[0].toLowerCase();
 			index++;
 		}
-		//make a new line for each item in arrays of items
+		//make a new line for each item in options
 		if (typeof lines[line].options_value_1 == 'object') {
 			for (var x in lines[line].options_value_1) {
 				lines[index] = lines[line];
 				lines[index].item = lines[line].options_value_1[x];
+					// if (lines[index].product.indexOf('verything') > -1) {
+					// 	console.log(lines[index].item)
+					// }
 				index ++;
 				//BUG: sometimes just repeats the last value in the array over and over
 			}
-		//make a new line for each item that is already a string
 		} 
-		else if ((typeof lines[line].options_value_1 == 'string') && (productName.indexOf('One') > -1)) {
-			lines[index] = lines[line];
-			lines[index].item = lines[line].options_value_1.toLowerCase();
-			index ++;
-		}
 	}
 	//console.log(lines);
 	return lines
@@ -303,22 +300,44 @@ function clean (objects) {
 		}
 		//make array for 'one of everything' orders
 		if (entry.product.indexOf('Everything') > -1) {
-			entry.options_value_1 = ['accelerometer', 'ble', 'gps', '2g', 'nrf', 'servo', 'ambient', 'camera', 'relay', 'audio', 'climate', 'microsd', 'rfid']
+			entry.options_value_1 = ['accelerometer', 'ble', 'gps', 'gprs', 'nrf', 'servo', 'ambient', 'camera', 'relay', 'audio', 'climate', 'microsd', 'rfid']
+		}
+		//make all option names arrays
+		if (typeof entry.options_value_1 == 'string') {
+			entry.options_value_1 = [entry.options_value_1.toLowerCase()]
 		}
 		//standardize product names
-	}//);
+		if (typeof entry.options_value_1 != 'undefined') {
+			for (var now in entry.options_value_1) {
+				item = entry.options_value_1[now];
+				if (item == 'nrf24') {
+					entry.options_value_1[now] = 'nrf'
+				} else if (item == 'sdcard') {
+					entry.options_value_1[now] = 'microsd'
+				} else if (item == '2g') {
+					entry.options_value_1[now] = 'gprs'
+				} else if (item == 'bluetooth low energy') {
+					entry.options_value_1[now] = 'ble'
+				} else if (item == 'audio module') {
+					entry.options_value_1[now] = 'audio'
+				} else if (item == '') {
+					entry.options_value_1[now] = 'undefined'
+				}
+			}
+		}
+	}
 	return objects;
 }
 
-function integrate (dragondata, celerydata) {
+function objectify (dragonData, celeryData) {
 	//takes input as shown MUST BE IN ORDER
 	//returns orders as an array of objects
 	var orders = []
-	celerydata.shift()
-	dragondata.shift()
+	celeryData.shift()
+	dragonData.shift()
 	var i = 0;
 	//objectify Celery orders
-	celerydata.forEach(function (row) {
+	celeryData.forEach(function (row) {
 		orders[i++] = {
 			order_id: row[0], 
 			date: row[1],
@@ -350,7 +369,7 @@ function integrate (dragondata, celerydata) {
 		}
 	});
 	//map & objectify Dragon orders
-	dragondata.forEach(function (row) {
+	dragonData.forEach(function (row) {
 		orders[i++] = {
 		order_id: row[8], //row[0].split('(')[1].split(')')[0],
 			date: row[4], //TODO: CONVERT TO CELERY TIME
