@@ -25,12 +25,13 @@ csv().from.path(dragonfile, {delimiter: ',', escape: '"'}).to.array(function(dra
 		orders = clean(objects);
 		quantOrders = multiply(objects);
 		lines = splitRows(quantOrders);
-		items = getRidOfStuff(lines); //removes betas, tees, thanks, tests
+		items = getRidOfStuff(lines); //removes betas, tees, thanks, tests, failed Celeries
 		packages = pack(items);
 		//console.log(Object.keys(packages))
 		selection = requireDragon(packages);
-		getDistr(items, 'buyer_country')
+		//getDistr(items, 'buyer_country')
 		//printStats(selection);
+		console.log(itemDistr(selection));
 	})
 })
 
@@ -63,6 +64,20 @@ function printStats (selection) {
 		// console.log('Geographic distribution of shipments: '); //sorted array [country: #shipments]
 		// console.log('Per country: '); //each country is a key in an object. The value is a sorted
 		// 							//array of the weight distribution within the country.
+}
+
+function itemDistr (selection) {
+	//find the distribution of items/package (fulfillment)
+	var amounts = {};
+	selection.forEach(function(pkg) {
+		var amount = pkg.length;
+		if (amount in amounts) {
+			amounts[amount] ++;
+		} else {
+			amounts[amount] = 1;
+		}
+	});
+	return amounts;
 }
 
 function weightDistribution (selection) {
@@ -159,7 +174,6 @@ function splitRows (quantOrders) {
 			index++;
 		}
 	});
-	console.log(lines)
 	return lines
 }
 
