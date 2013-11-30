@@ -15,19 +15,68 @@ var celeryfile = '../celeryorders.csv'////'./ordertracking.csv';
 //Read both order files
 csv().from.path(dragonfile, {delimiter: ',', escape: '"'}).to.array(function(dragondata) {
 	csv().from.path(celeryfile, {delimiter: ',', escape: '"'}).to.array(function(celerydata) {
-		orders = integrate(dragondata, celerydata);
+		objects = integrate(dragondata, celerydata);
+		orders = clean(objects);
 		lines = splitRows(orders);
 		items = getRidOfStuff(lines); //removes betas, tees, thanks, tests
 		packages = pack(items); //need to build in more wiggle room here; clean up countries etc
 		selection = requireDragon(packages);
+		getDistr(orders, 'buyer_country')
+		//printStats(selection);
 	})
 })
 
+function getDistr (selection, attr) {
+	//prints stats about elements of selection.attr NOT WORKING W ARG
+	var attrs = {}
+	selection.forEach(function (entry) {
+		var attribute = entry.buyer_country//MANUAL RIGHT NOW
+		if (attribute in attrs) {
+			//console.log ('not new')
+			attrs[attribute] ++;
+		} else {
+			//console.log(attribute)
+			attrs[attribute] = 1;
+		}
+	});
+	var sortable = [];
+	for (var entry in attrs){
+		sortable.push([entry, attrs[entry]])
+	}
+	sortable.sort(function(a, b) {return b[1] - a[1]})
+	console.log(sortable)
+}
+
 function printStats (selection) {
 	console.log('Total number of shipments: ' + selection.length);
-	console.log('Distribution of items per shipment: '); //sorted array [#items: #shipments]
-	console.log('Weight distribution of shipments: '); //sorted array [weight: #shipments]
-	console.log('Geographic distribution of shipments: '); //sorted array [country: #shipments]
+		// console.log('Distribution of items per shipment: '); //sorted array [#items: #shipments]
+		// console.log('Weight distribution of shipments: '); //sorted array [weight: #shipments]
+		// console.log('Geographic distribution of shipments: '); //sorted array [country: #shipments]
+		// console.log('Per country: '); //each country is a key in an object. The value is a sorted
+		// 							//array of the weight distribution within the country.
+}
+
+function weightDistribution (selection) {
+	//set weight of each item (oz.)
+	tesselWt = 1.8;
+	accelWt = .1;
+	relayWt = .2;
+	climateWt = .1;
+	ambientWt = .1;
+	servoWt = 7;
+	microsdWt = .2;
+	nrfWt = .2;
+	rfidWt = .7;
+	audioWt = .2;
+	cameraWt = 2.1;
+	gprsWt = .2;
+	gpsWt = .2;
+	bleWt = .1;
+	bagWt = .1;
+	boxWt = .2;
+	//add up weight of each item, bag for each item, box for each shipment
+	//store these vals in an object: {package: weight}
+	//make a sorted object: {weight: #packages}
 }
 
 function requireDragon (packages) {
@@ -83,10 +132,6 @@ function splitRows (orders) {
 	var lines = [];
 	index = 0; //for indexing lines
 	orders.forEach( function (order) {
-		//make array for 'one of everything' orders
-		if (order.product.indexOf('Everything') > -1) {
-			order.options_value_1 = ['accelerometer', 'ble', 'gps', '2g', 'nrf', 'servo', 'ambient', 'camera', 'relay', 'audio', 'climate', 'microsd', 'rfid']
-		}
 		//iterate for 'quantity' value
 		for (var num = 0; num < parseInt(order.quantity); num ++) {
 			lines[index] = order;
@@ -131,16 +176,146 @@ function splitRows (orders) {
 	return lines
 }
 
+function clean (objects) {
+	for (var i in objects) {
+		entry = objects[i];
+		//standardize countries
+		var country = entry.buyer_country;
+		if (country == 'US') {
+			entry.buyer_country = 'United States'
+		} else if (country == 'DE') {
+			entry.buyer_country = 'Denmark'
+		} else if (country == 'CA') {
+			entry.buyer_country = 'Canada'
+		} else if (country == 'AU') {
+			entry.buyer_country = 'Australia'
+		} else if (country == 'GB') {
+			entry.buyer_country = 'United Kingdom'
+		} else if (country == 'IT') {
+			entry.buyer_country = 'Italy'
+		} else if (country == 'JP') {
+			entry.buyer_country = 'Japan'
+		} else if (country == 'CH') {
+			entry.buyer_country = 'Switzerland'
+		} else if (country == 'RU' || country == 'Russian Federation') {
+			entry.buyer_country = 'Russia'
+		} else if (country == 'NO') {
+			entry.buyer_country = 'Norway'
+		} else if (country == 'SG') {
+			entry.buyer_country = 'Singapore'
+		} else if (country == 'IL') {
+			entry.buyer_country = 'Israel'
+		} else if (country == 'AT') {
+			entry.buyer_country = 'Austria'
+		} else if (country == 'SE') {
+			entry.buyer_country = 'Sweden'
+		} else if (country == 'RO') {
+			entry.buyer_country = 'Romania'
+		} else if (country == 'TW' || country == 'Taiwan, Province of China') {
+			entry.buyer_country = 'Taiwan'
+		} else if (country == 'IE') {
+			entry.buyer_country = 'Ireland'
+		} else if (country == 'UA') {
+			entry.buyer_country = 'Ukraine'
+		} else if (country == 'CN') {
+			entry.buyer_country = 'China'
+		} else if (country == 'Moldova, Republic of') {
+			entry.buyer_country = 'Moldova'
+		} else if (country == 'Korea, Republic of') {
+			entry.buyer_country = 'Korea'
+		}
+		country = entry.buyer_country;
+		//standardize states
+		if (country == 'United States') {
+			entry.buyer_state = entry.buyer_state.toUpperCase();
+			state = entry.buyer_state;
+			if (state == 'CALIFORNIA' || state == 'CA - CALIFORNIA' || state == 'CALIFORNIA (CA)') {
+				entry.buyer_state = 'CA'
+			} else if (state == 'NEW YORK') {
+				entry.buyer_state = 'NY'
+			} else if (state == 'TEXAS' || state == 'TX - TEXAS' || state == 'TX-TEXAS') {
+				entry.buyer_state = 'TX'
+			} else if (state == 'NORTH CAROLINA') {
+				entry.buyer_state = 'NC'
+			} else if (state == 'COLORADO' || state == 'CO - COLORADO') {
+				entry.buyer_state = 'CO'
+			} else if (state == 'VIRGINIA') {
+				entry.buyer_state = 'VA'
+			} else if (state == 'FLORIDA') {
+				entry.buyer_state = 'FL'
+			} else if (state == 'ILLINOIS') {
+				entry.buyer_state = 'IL'
+			} else if (state == 'TENNESSEE') {
+				entry.buyer_state = 'TN'
+			} else if (state == 'GEORGIA') {
+				entry.buyer_state = 'GA'
+			} else if (state == 'SOUTH CAROLINA') {
+				entry.buyer_state = 'SC'
+			} else if (state == 'MINNESOTA') {
+				entry.buyer_state = 'MN'
+			} else if (state == 'MICHIGAN') {
+				entry.buyer_state = 'MI'
+			} else if (state == 'NEW JERSEY') {
+				entry.buyer_state = 'NJ'
+			} else if (state == 'WISCONSIN') {
+				entry.buyer_state = 'WI'
+			} else if (state == 'MARYLAND') {
+				entry.buyer_state = 'MD'
+			} else if (state == 'OREGON') {
+				entry.buyer_state = 'OR'
+			} else if (state == 'WASHINGTON' || state == 'WA - WASHINGTON') {
+				entry.buyer_state = 'WA'
+			} else if (state == 'MASSACHUSETTS' || state == 'MA - MASSACHUSETTS') {
+				entry.buyer_state = 'MA'
+			} else if (state == 'PUERTO RICO') {
+				entry.buyer_state = 'PR'
+			} else if (state == 'CONNECTICUT') {
+				entry.buyer_state = 'CT'
+			} else if (state == 'DELAWARE') {
+				entry.buyer_state = 'DE'
+			} else if (state == 'MAINE') {
+				entry.buyer_state = 'ME'
+			} else if (state == 'ARIZONA') {
+				entry.buyer_state = 'AZ'
+			} else if (state == 'NEBRASKA') {
+				entry.buyer_state = 'NE'
+			} else if (state == 'OH - OHIO') {
+				entry.buyer_state = 'OH'
+			} else if (state == 'IDAHO') {
+				entry.buyer_state = 'ID'
+			} else if (state == 'MISSOURI' || state == 'MO-MISSOURI') {
+				entry.buyer_state = 'MO'
+			} else if (state == 'VERMONT') {
+				entry.buyer_state = 'VT'
+			} else if (state == 'PENNSYLVANIA') {
+				entry.buyer_state = 'PA'
+			} else if (state == 'DISTRICT OF COLUMBIA') {
+				entry.buyer_state = 'DC'
+			} else if (state == 'NEVADA') {
+				entry.buyer_state = 'NV'
+			} else if (state == 'UTAH') {
+				entry.buyer_state = 'UT'
+			}
+		}
+		//make array for 'one of everything' orders
+		if (entry.product.indexOf('Everything') > -1) {
+			entry.options_value_1 = ['accelerometer', 'ble', 'gps', '2g', 'nrf', 'servo', 'ambient', 'camera', 'relay', 'audio', 'climate', 'microsd', 'rfid']
+		}
+		//standardize product names
+	}//);
+	return objects;
+}
+
 function integrate (dragondata, celerydata) {
 	//takes input as shown MUST BE IN ORDER
 	//returns orders as an array of objects
 	var orders = []
 	celerydata.shift()
 	dragondata.shift()
+	var i = 0;
 	//objectify Celery orders
-	for (var i in celerydata) {
-		row = celerydata[i];
-		orders[i] = {
+	celerydata.forEach(function (row) {
+		orders[i++] = {
 			order_id: row[0], 
 			date: row[1],
 			order_status: row[2],
@@ -169,39 +344,38 @@ function integrate (dragondata, celerydata) {
 			options_price_1: row[25],
 			orderPlatform: 'Celery'
 		}
-	}
-	//map & objectify Dragon orders
-	for (var j in dragondata) {
-		row = dragondata[j];
-		orders[i + j] = {
-			order_id: row[8], //row[0].split('(')[1].split(')')[0],
-			date: row[4], //TODO: CONVERT TO CELERY TIME
-			order_status: 'paid_balance',
-			shipped_status: '',
-			buyer_email: row[5], //
-			buyer_name: row[18], //
-			buyer_company: '',
-			buyer_street: row[15], //
-			buyer_street2: row[16], //
-			buyer_city: row[2], //
-			buyer_state: row[12], //TODO: MAKE UNIFORM
-			buyer_zip: row[9], //
-			buyer_country: row[3],//TODO: MAKE UNIFORM
-			buyer_phone: '',
-			payment_method: row[10], //'preference'
-			order_total: row[17], //
-			order_taxes: row[14], //'shipping_cost'
-			order_notes: '',
-			coupon_code: '',
-			product: row[7], //
-			quantity: row[11], //
-			unit_price: row[1], //
-			line_total: row[17], //
-			options_name_1: row[6], //
-			options_value_1: eval(row[13]), //
-			options_price_1: '',
-			orderPlatform: 'Dragon'
-		}
-	}
-	return orders
+		//map & objectify Dragon orders
+		dragondata.forEach(function (row) {
+			orders[i++] = {
+				order_id: row[8], //row[0].split('(')[1].split(')')[0],
+				date: row[4], //TODO: CONVERT TO CELERY TIME
+				order_status: 'paid_balance',
+				shipped_status: '',
+				buyer_email: row[5], //
+				buyer_name: row[18], //
+				buyer_company: '',
+				buyer_street: row[15], //
+				buyer_street2: row[16], //
+				buyer_city: row[2], //
+				buyer_state: row[12], //TODO: MAKE UNIFORM
+				buyer_zip: row[9], //
+				buyer_country: row[3],//TODO: MAKE UNIFORM
+				buyer_phone: '',
+				payment_method: row[10], //'preference'
+				order_total: row[17], //
+				order_taxes: row[14], //'shipping_cost'
+				order_notes: '',
+				coupon_code: '',
+				product: row[7], //
+				quantity: row[11], //
+				unit_price: row[1], //
+				line_total: row[17], //
+				options_name_1: row[6], //
+				options_value_1: eval(row[13]), //
+				options_price_1: '',
+				orderPlatform: 'Dragon'
+			}
+		});
+	});
+	return orders;
 }
