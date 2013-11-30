@@ -12,7 +12,6 @@
 UNSOLVED MYSTERIES
 Why are there so many tessels?
 Why do Master Packs and Everythings repeat?
-Where do the 'undefined's come from?
 */
 
 var csv = require('csv');
@@ -24,7 +23,8 @@ csv().from.path(dragonfile, {delimiter: ',', escape: '"'}).to.array(function(dra
 	csv().from.path(celeryfile, {delimiter: ',', escape: '"'}).to.array(function(celeryData) {
 		objects = objectify(dragonData, celeryData);
 		orders = clean(objects);
-		lines = splitRows(orders);
+		quantOrders = multiply(objects);
+		lines = splitRows(quantOrders);
 		items = getRidOfStuff(lines); //removes betas, tees, thanks, tests
 		packages = pack(items);
 		//console.log(Object.keys(packages))
@@ -135,29 +135,30 @@ function getRidOfStuff (lines) {
 	return items
 }
 
-function splitRows (orders) {
-	//takes in orders, creates a new line for each item in the order
-	//returns 'lines', each of which has one item
-	var lines = [];
-	index = 0; //for indexing lines
-	for (var i in orders) {
-		//iterate for 'quantity' value
-		for (var num = 0; num < parseInt(orders[i].quantity); num ++) {
-			lines[index] = orders[i];
-			lines[index].quantity = 1;
-			index ++;
+function multiply (orders) {
+	var index = 0;
+	var quantOrders = [];
+	orders.forEach(function (order) {
+		for (var num = 0; num < parseInt(order.quantity); num++) {
+			quantOrders[index] = order;
+			quantOrders[index].quantity = 1;
+			index++
 		}
-	} 
-	var currentLength = index;
-	for (var line = 0; line < currentLength; line ++) {
-		//make a new line for each item in options
-		for (var myVar in lines[line].options_value_1) {
-			//console.log(lines[line].options_value_1)
-			lines[index] = lines[line];
-			lines[index].item = lines[line].options_value_1[myVar];
-			index ++;
-		} 
-	}
+	});
+	return quantOrders;
+}
+
+function splitRows (quantOrders) {
+	//returns 'lines', each of which has one item
+	index = 0;
+	var lines = []
+	quantOrders.forEach(function (order) {
+		for (var myVar in order.options_value_1) {
+			lines[index] = order;
+			lines[index].item = order.options_value_1[myVar];
+			index++;
+		}
+	});
 	console.log(lines)
 	return lines
 }
