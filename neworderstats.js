@@ -69,14 +69,20 @@ function printStats (selection) {
 function itemDistr (selection) {
 	//find the distribution of items/package (fulfillment)
 	var amounts = {};
+	totalcount = 0;
 	selection.forEach(function(pkg) {
 		var amount = pkg.length;
 		if (amount in amounts) {
 			amounts[amount] ++;
+			totalcount++;
 		} else {
 			amounts[amount] = 1;
+			totalcount++;
 		}
 	});
+	for (i in amounts) {
+		console.log(amounts[i]/totalcount)
+	}
 	return amounts;
 }
 
