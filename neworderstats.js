@@ -31,9 +31,17 @@ csv().from.path(dragonfile, {delimiter: ',', escape: '"'}).to.array(function(dra
 		selection = requireDragon(packages);
 		//getDistr(items, 'buyer_country')
 		//printStats(selection);
-		console.log(itemDistr(selection));
-	})
+		//console.log(itemDistr(selection));
+	});
 })
+
+function findCustomerByEmail (email) {
+	objects.forEach(function(entry) {
+		if (entry.buyer_email == email) {
+			console.log(entry)
+		}
+	});
+}
 
 function getDistr (selection, attr) {
 	//prints stats about elements of selection.attr NOT WORKING W ARG
